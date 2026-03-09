@@ -42,7 +42,7 @@ Kubernetes-like API (`metadata`/`spec`/`status`) обеспечивает дек
 
 ### 1.2 Non-Goals (вне скоупа MVP)
 
-- Compute orchestration (Instance, Scheduler) — будет добавлено на следующих этапах
+- Scheduler (автоматический placement Instance на HV) — будет добавлен на следующих этапах; на MVP `spec.hvRef` указывается вручную
 - SecurityGroups / Network ACL — будет добавлено на следующих этапах
 - Load Balancer — будет добавлен на следующих этапах
 - Multi-region / federation
@@ -110,7 +110,8 @@ Kubernetes-like API (`metadata`/`spec`/`status`) обеспечивает дек
 | **VPC** | VPC | Область изоляции tenant'а; не содержит адресов; один VNI на VPC |
 | **Subnet** | Subnet | Сеть с CIDR; подключается к VPC |
 | **Address** | Elastic IP / Private IP | IP-адрес (private из Subnet или public из пула провайдера) |
-| **NetworkInterface** | Elastic Network Interface | Сетевой интерфейс; самостоятельный ресурс без привязок |
+| **NetworkInterface** | Elastic Network Interface | Сетевой интерфейс; привязан к Instance через `spec.instanceRef` |
+| **Instance** | EC2 Instance (минимальный) | Виртуальная машина; привязана к HV через `spec.hvRef`; определяет placement NI |
 | **Gateway** | NAT Gateway | Точка выхода трафика из VPC через общий IP (SNAT) |
 | **RouteTable** | Route Table | Правила маршрутизации внутри VPC |
 
@@ -124,11 +125,13 @@ Kubernetes-like API (`metadata`/`spec`/`status`) обеспечивает дек
 
 ### 3.2 Поведение каждого HV
 
-Каждый гипервизор:
+Каждый гипервизор — **самодостаточный узел**. Agent на HV подключается к API через watch и самостоятельно вычисляет desired state:
 
-1. **Обслуживает NetworkInterface'ы** — Agent создаёт veth pair, назначает IP/MAC из данных AddressBinding. IP привязан к ресурсу Address, а не к HV, что гарантирует сохранение адреса при live migration.
-2. **Анонсирует агрегат (host-block) в BGP** — для большинства локальных NI трафик попадает по агрегированному маршруту. Мигрированные NI анонсируются отдельным /32.
-3. **Применяет policy локально** — правила безопасности будут исполняться на HV (SecurityGroups — следующий этап).
+1. **Watch'ит API** — Agent подписывается на Instance (с `hvRef` = свой HV), NI, AddressBinding, Address, Subnet, SubnetBinding, VPC, RouteTable, RouteTableBinding, Gateway. Из цепочки ресурсов Agent вычисляет, какие VRF, VXLAN, bridge и veth нужно создать.
+2. **Обслуживает NetworkInterface'ы** — Agent создаёт veth pair, назначает IP/MAC из данных AddressBinding. IP привязан к ресурсу Address, а не к HV, что гарантирует сохранение адреса при live migration.
+3. **Анонсирует агрегат (host-block) в BGP** — для большинства локальных NI трафик попадает по агрегированному маршруту. Мигрированные NI анонсируются отдельным /32.
+4. **Применяет policy локально** — правила безопасности будут исполняться на HV (SecurityGroups — следующий этап).
+5. **Отчитывается в API** — Agent обновляет `status` ресурсов (NI state, Instance state) через API.
 
 ### 3.3 IP allocation vs routing aggregation
 
@@ -432,17 +435,46 @@ CIDR в разных VRF не конфликтуют — это полность
 
 | Компонент | Функция | Этап |
 |-----------|---------|------|
-| **API** | REST/gRPC; CRUD для всех сетевых ресурсов | MVP |
+| **API** | REST/gRPC; CRUD для всех ресурсов; watch-стриминг событий | MVP |
 | **IPAM** | Аллокация IP из Subnet, host-block для HV, VNI для VPC | MVP |
-| **Network Controller** | Программирование сети на HV (VXLAN, BGP, routes); watch API → push config | MVP |
-| **Agent** (на каждом HV) | Применение конфигурации: FRR, VXLAN, NetworkInterface | MVP |
-| **Scheduler** | Placement — выбор HV для Instance (compute) | Будущий этап |
+| **Status Controller** | Watch'ит API; вычисляет производные поля (NI status при AddressBinding, MAC-генерация); НЕ общается с Agent'ами | MVP |
+| **Agent** (на каждом HV) | Watch'ит API; самостоятельно вычисляет desired state из цепочки ресурсов; применяет конфигурацию (FRR, VXLAN, veth); обновляет status в API | MVP |
+| **Scheduler** | Placement — выбор HV для Instance (заполняет `spec.hvRef`) | Будущий этап |
 
 ### 7.2 Взаимодействие
 
-- **API** — принимает декларативные ресурсы; вызывает IPAM для аллокации IP/VNI.
-- **Network Controller** — watch'ит API на изменения ресурсов (NI → available); формирует целевое состояние и пушит его Agent'ам.
-- **Agent** — получает конфиг, применяет локально (FRR, VXLAN, veth), отчитывается о статусе.
+- **API** — принимает декларативные ресурсы; вызывает IPAM для аллокации IP/VNI; предоставляет watch-стримы для всех типов ресурсов.
+- **Status Controller** — watch'ит API на изменения связей (AddressBinding создан → обновить NI status → `available`; MAC-генерация). Это **не** сетевой контроллер — он не управляет Agent'ами.
+- **Agent** — подключается к API через watch; подписывается на Instance, NI, AddressBinding, Address, Subnet, SubnetBinding, VPC и связанные ресурсы; самостоятельно вычисляет desired state для своего HV; применяет локально (FRR, VXLAN, veth); отчитывается о статусе через API.
+
+### 7.3 Модель взаимодействия: Agent → API (watch)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                   │
+│  Kubernetes-like модель:                                         │
+│                                                                   │
+│  kubelet watch'ит API Server → Pod'ы на своём node               │
+│  Agent   watch'ит API        → Instance'ы на своём HV            │
+│                                                                   │
+│  Контроллеры обновляют STATUS ресурсов, а не пушат в Agent'ы     │
+│  Agent сам подхватывает изменения через watch                    │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+Agent на HV строит desired state из цепочки ресурсов:
+
+```
+Instance (spec.hvRef = "my-hv")
+  └── NI (spec.instanceRef → Instance)
+        └── AddressBinding → Address (status.ip)
+              └── Address.spec.subnetRef → Subnet
+                    └── SubnetBinding → VPC (status.vni)
+                          └── RouteTableBinding → RouteTable → Gateway
+```
+
+Agent watch'ит все эти ресурсы и при любом изменении пересчитывает desired state.
 
 ---
 
@@ -454,57 +486,58 @@ CIDR в разных VRF не конфликтуют — это полность
                     ┌─────────────────────────────────────┐
                     │              API (REST/gRPC)         │
                     │  VPC | Subnet | Address | NI | ...   │
-                    └───────────────────┬─────────────────┘
-                                        │
-                    ┌───────────────────┼───────────────────┐
-                    │                                       │
-                    ▼                                       ▼
-             ┌──────────────┐                       ┌──────────────┐
-             │     IPAM     │                       │   Network    │
-             │  IP / VNI    │                       │  Controller  │
-             │  Host-block  │                       │  (watch API) │
-             └──────────────┘                       └──────┬───────┘
-                                                           │
-                    ┌──────────────────────────────────────┤
-                    │                  │                    │
-                    ▼                  ▼                    ▼
-             ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-             │   Agent      │   │   Agent      │   │   Agent      │
-             │   (HV1)      │   │   (HV2)      │   │   (HV3)      │
-             └──────┬───────┘   └──────┬───────┘   └──────┬───────┘
-                    │                  │                    │
-                    ▼                  ▼                    ▼
-             ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-             │  FRR, VXLAN  │   │  FRR, VXLAN  │   │  FRR, VXLAN  │
-             │  NI (veth)   │   │  NI (veth)   │   │  NI (veth)   │
-             └──────────────┘   └──────────────┘   └──────────────┘
+                    │  Instance | Gateway | RouteTable     │
+                    └──┬──────────────┬──────────────┬────┘
+                       │              │              │
+          ┌────────────┤              │              ├────────────┐
+          │            │              │              │            │
+          ▼            ▼              ▼              ▼            ▼
+   ┌──────────┐ ┌──────────┐  ┌──────────────┐ ┌──────────┐ ┌──────────┐
+   │  Agent   │ │  Agent   │  │   Status     │ │  Agent   │ │  IPAM    │
+   │  (HV1)  │ │  (HV2)  │  │  Controller  │ │  (HV3)  │ │ IP/VNI   │
+   │          │ │          │  │  (watch API, │ │          │ │          │
+   │ watch ↑  │ │ watch ↑  │  │  update      │ │ watch ↑  │ │          │
+   │ status ↓ │ │ status ↓ │  │  status)     │ │ status ↓ │ │          │
+   └────┬─────┘ └────┬─────┘  └──────────────┘ └────┬─────┘ └──────────┘
+        │             │                               │
+        ▼             ▼                               ▼
+   ┌──────────┐ ┌──────────┐                    ┌──────────┐
+   │ FRR,VXLAN│ │ FRR,VXLAN│                    │ FRR,VXLAN│
+   │ NI(veth) │ │ NI(veth) │                    │ NI(veth) │
+   └──────────┘ └──────────┘                    └──────────┘
 ```
+
+Agent'ы подключаются к API через watch (стрелки ↑↓). Нет промежуточного контроллера в config path.
 
 ### 8.2 Mermaid: flow control-plane
 
 ```mermaid
 flowchart LR
-    subgraph API["API Layer"]
-        API_SVC[API Service]
+    subgraph API_layer["API Layer"]
+        API_SVC["API Service\n(watch endpoints)"]
     end
 
     subgraph Services["Services"]
         IPAM[IPAM]
-        NetCtrl[Network Controller]
+        StatusCtrl["Status Controller\n(computed fields)"]
     end
 
-    subgraph HV["Hypervisors"]
-        Agent1[Agent HV1]
-        Agent2[Agent HV2]
-        Agent3[Agent HV3]
+    subgraph HVs["Hypervisors"]
+        Agent1["Agent HV1\n(watch + apply)"]
+        Agent2["Agent HV2\n(watch + apply)"]
+        Agent3["Agent HV3\n(watch + apply)"]
     end
 
     API_SVC --> IPAM
-    API_SVC -.->|watch| NetCtrl
+    API_SVC -.->|watch| StatusCtrl
+    StatusCtrl -.->|"status update"| API_SVC
 
-    NetCtrl --> Agent1
-    NetCtrl --> Agent2
-    NetCtrl --> Agent3
+    Agent1 -.->|watch| API_SVC
+    Agent2 -.->|watch| API_SVC
+    Agent3 -.->|watch| API_SVC
+    Agent1 -.->|"status update"| API_SVC
+    Agent2 -.->|"status update"| API_SVC
+    Agent3 -.->|"status update"| API_SVC
 ```
 
 ---
@@ -522,20 +555,23 @@ flowchart LR
  4. upsert Gateway                   → NAT Gateway (SNAT для приватных NI)
  5. upsert RouteTable                → маршруты (0.0.0.0/0 → Gateway)
  6. upsert RouteTableBinding         → привязка RouteTable к Subnet или VPC
- 7. upsert NetworkInterface          → пустой NI (состояние created)
- 8. upsert Address (private)         → приватный IP из Subnet (IPAM аллоцирует)
- 9. upsert AddressBinding            → Address(private) ↔ NI; NI → available
-10. upsert Address (public, опц.)    → публичный IP из пула провайдера
-11. upsert AddressBinding (опц.)     → Address(public) ↔ NI; NAT-маппинг
+ 7. upsert Instance                  → VM на конкретном HV (spec.hvRef)
+ 8. upsert NetworkInterface          → NI привязан к Instance (spec.instanceRef)
+ 9. upsert Address (private)         → приватный IP из Subnet (IPAM аллоцирует)
+10. upsert AddressBinding            → Address(private) ↔ NI; NI → available
+11. upsert Address (public, опц.)    → публичный IP из пула провайдера
+12. upsert AddressBinding (опц.)     → Address(public) ↔ NI; NAT-маппинг
 ```
 
 ### 9.2 Что происходит на data-plane
 
-После шага 9 (NI переходит в `available`):
-1. **Network Controller** получает watch-событие и формирует конфиг для Agent на целевом HV
-2. **Agent** на HV создаёт veth pair, подключает к bridge/namespace, назначает IP/MAC
-3. **FRR/EVPN** автоматически обучает MAC/IP → VNI → nexthop
-4. Если IP попадает в host-block HV — BGP не менялся. Иначе — /32 leaked route
+После шага 10 (NI переходит в `available`):
+1. **Agent** на целевом HV получает watch-событие (NI стал `available`; NI привязан к Instance на этом HV)
+2. **Agent** разрешает цепочку: NI → AddressBinding → Address → Subnet → SubnetBinding → VPC (VNI) → RouteTable → Gateway
+3. **Agent** вычисляет desired state и создаёт VRF, bridge, VXLAN iface (если ещё нет для этого VPC), veth pair, назначает IP/MAC
+4. **FRR/EVPN** автоматически обучает MAC/IP → VNI → nexthop
+5. Если IP попадает в host-block HV — BGP не менялся. Иначе — /32 leaked route
+6. **Agent** обновляет status Instance и NI в API
 
 ### 9.3 Mermaid: sequence diagram
 
@@ -544,22 +580,31 @@ sequenceDiagram
     participant User
     participant API
     participant IPAM
-    participant NetCtrl as Network Controller
-    participant Agent
-    participant HV
+    participant StatusCtrl as Status Controller
+    participant Agent as "Agent (HV)"
+    participant Kernel as "Linux + FRR"
+
+    Note over Agent,API: Agent уже watch'ит API
 
     User->>API: upsert VPC, Subnet, SubnetBinding
     User->>API: upsert Gateway, RouteTable, RouteTableBinding
-    User->>API: upsert NetworkInterface
+    User->>API: upsert Instance (hvRef = "hv1")
+    User->>API: upsert NetworkInterface (instanceRef → Instance)
     User->>API: upsert Address (private)
     API->>IPAM: AllocateIP(Subnet)
-    IPAM->>API: IP assigned
+    IPAM-->>API: IP assigned
     User->>API: upsert AddressBinding (private ↔ NI)
-    API->>API: NI → available
-    API-->>NetCtrl: watch event (NI available)
-    NetCtrl->>Agent: Config push (NI, IP, VNI)
-    Agent->>HV: Create veth, configure IP/MAC, VXLAN
-    Agent->>API: Status update
+    API-->>StatusCtrl: watch: AddressBinding created
+    StatusCtrl->>API: update NI status → available (+ MAC)
+
+    API-->>Agent: watch: NI available (на Instance этого HV)
+    Agent->>Agent: resolve chain: NI → Address → Subnet → VPC
+    Agent->>Agent: compute desired state
+    Agent->>Kernel: create VRF, bridge, VXLAN, veth, assign IP/MAC
+    Agent->>Kernel: configure FRR (BGP/EVPN, host-block)
+    Agent->>API: update Instance status, NI applied
+
+    Note over Kernel: HV теперь автономен для этого NI
 ```
 
 ---
@@ -570,8 +615,8 @@ sequenceDiagram
 
 | Этап | Масштаб | Ключевые характеристики |
 |------|---------|---------------------------|
-| **MVP** | 3–20 HV | Полный сетевой стек: EVPN + 2 RR, host-block aggregation, NAT Gateway, persistence, API + IPAM + Network Controller + Agent |
-| **Production v1** | Десятки/сотни HV | Compute (Instance, Scheduler), SecurityGroups, мониторинг, HA control-plane |
+| **MVP** | 3–20 HV | Полный сетевой стек: EVPN + 2 RR, адаптивная host-block aggregation, NAT Gateway, persistence, API + IPAM + Status Controller + Agent (watch API), минимальный Instance |
+| **Production v1** | Десятки/сотни HV | Scheduler (автоматический placement), SecurityGroups, мониторинг, HA control-plane |
 | **Large scale** | Сотни+ HV | Cells, шардирование control-plane, опционально fabric/DPU |
 
 ### 10.2 MVP (3–20 HV)
@@ -582,13 +627,14 @@ sequenceDiagram
 |-----------|-----------------|-------------|
 | **VXLAN + EVPN** | FRR с BGP EVPN type-2/type-5 на каждом HV | Автоматическое обучение MAC/IP; не нужно вручную прописывать FDB и туннели |
 | **Route Reflector** | 2 шт (HA), FRR | Без full-mesh; при добавлении HV — только одна BGP-сессия к каждому RR |
-| **Host-block aggregation** | IPAM выделяет /26 routing-block на HV | BGP стабилен при churn; /32 leaked routes при миграции |
+| **Host-block aggregation** | Адаптивная стратегия: lazy allocation, размер блока зависит от Subnet; маленькие Subnet — без блоков (/32) | BGP стабилен при churn; /32 leaked routes при миграции; NI размещается на любом HV |
 | **NAT Gateway** | SNAT на выделенном узле / HV | Доступ в интернет для NI без публичного IP |
 | **Persistence** | PostgreSQL (состояние ресурсов, IPAM) | Восстановление после рестарта; source of truth для desired state |
-| **API** | REST/gRPC, один инстанс | CRUD для VPC, Subnet, Address, NetworkInterface, Gateway, RouteTable + binding-ресурсы |
-| **IPAM** | Subnet allocation + host-block + locality-aware IP + VNI pool | Центральное управление адресным пространством |
-| **Network Controller** | Watch API → программирование VXLAN/EVPN/routes через Agent | Синхронизация desired → actual state |
-| **Agent** | На каждом HV: FRR, VXLAN, NetworkInterface (veth) | Исполнение конфигурации |
+| **API** | REST/gRPC, один инстанс | CRUD для VPC, Subnet, Address, NetworkInterface, Instance, Gateway, RouteTable + binding-ресурсы; watch-стриминг |
+| **IPAM** | Subnet allocation + adaptive host-block + locality-aware IP + VNI pool | Центральное управление адресным пространством |
+| **Status Controller** | Watch API → вычисление производных полей (NI status, MAC) | Не общается с Agent'ами; обновляет status ресурсов в API |
+| **Agent** | На каждом HV: watch API → самостоятельно вычисляет desired state → FRR, VXLAN, veth | Автономный; подключается к API через watch; отчитывается через status update |
+| **Instance (минимальный)** | `spec.hvRef` (ручной placement на MVP) + `spec.instanceRef` на NI | Определяет на каком HV живёт VM и её NI |
 
 **Почему EVPN сразу, а не статический VXLAN:**
 
@@ -607,10 +653,10 @@ sequenceDiagram
 
 | Компонент | Эволюция от MVP |
 |-----------|----------------|
-| **Compute** | Instance, Scheduler (placement по CPU/RAM, антиаффинити, bin-packing) |
+| **Scheduler** | Автоматический placement: выбор HV по CPU/RAM, антиаффинити, bin-packing; заполняет `spec.hvRef` на Instance |
 | **SecurityGroups** | Правила безопасности на уровне NetworkInterface |
 | **Multi-tenancy** | Полная изоляция: VRF per tenant, квоты, RBAC |
-| **HA control-plane** | API и Controller за load balancer; leader election |
+| **HA control-plane** | API за load balancer; Status Controller с leader election |
 | **Мониторинг** | Prometheus + алерты: BGP-сессии, churn rate, IPAM utilization |
 | **Live migration** | Полный цикл: /32 leaked route → convergence → optional rebalancing |
 | **Load Balancer** | L4/L7 балансировка трафика |
@@ -1654,6 +1700,7 @@ CREATED ──AddressBinding(private Address)──▶ AVAILABLE
 - `networkInterfaces[].metadata.uid` — UUID; сервер генерирует при upsert; обязателен при update
 - `networkInterfaces[].metadata.labels` — метки для labelSelector
 - `networkInterfaces[].metadata.annotations` — произвольные аннотации
+- `networkInterfaces[].spec.instanceRef` — ссылка на Instance: `{ name, namespace }`
 - `networkInterfaces[].spec.comment` — комментарий
 - `networkInterfaces[].spec.description` — описание
 - `networkInterfaces[].spec.displayName` — отображаемое имя
@@ -1666,6 +1713,9 @@ CREATED ──AddressBinding(private Address)──▶ AVAILABLE
 | `networkInterfaces[].metadata.uid` | при update | string | |
 | `networkInterfaces[].metadata.labels` | нет | Object | |
 | `networkInterfaces[].metadata.annotations` | нет | Object | |
+| `networkInterfaces[].spec.instanceRef` | да | Object | |
+| `networkInterfaces[].spec.instanceRef.name` | да | string | |
+| `networkInterfaces[].spec.instanceRef.namespace` | да | string | |
 | `networkInterfaces[].spec.comment` | нет | string | |
 | `networkInterfaces[].spec.description` | нет | string | |
 | `networkInterfaces[].spec.displayName` | нет | string | |
@@ -1680,11 +1730,11 @@ CREATED ──AddressBinding(private Address)──▶ AVAILABLE
 | `metadata.labels` | ключ: `^[a-z0-9\-_.\/]{1,63}$`; значение: `^.{0,63}$` | `400 invalid_labels` |
 | `metadata.annotations` | ключ: `^[a-z0-9\-_.\/]{1,253}$`; значение: без ограничений | `400 invalid_annotations` |
 | `name` + `namespace` | уникальная пара (при upsert) | `409 already_exists` |
+| `spec.instanceRef` | обязательное; `{ name, namespace }`; Instance должен существовать | `404 referenced_resource_not_found` |
+| `spec.instanceRef` | неизменяемое (immutable) | `400 immutable_field` |
 | `spec.description` | макс. 256 символов | `400 invalid_description` |
 | `spec.displayName` | макс. 128 символов | `400 invalid_display_name` |
 | `spec.comment` | макс. 256 символов | `400 invalid_comment` |
-
-> Нет обязательных spec-полей помимо стандартных строковых.
 
 #### Пример использования (Создание)
 
@@ -1700,6 +1750,7 @@ curl 'api:9006/v1/network-interfaces/upsert' \
         "labels": { "role": "web" }
       },
       "spec": {
+        "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" },
         "description": "Primary ENI for web-server-1",
         "displayName": "Web ENI 1"
       }
@@ -1719,6 +1770,7 @@ curl 'api:9006/v1/network-interfaces/upsert' \
 - `networkInterfaces[].metadata.annotations` — аннотации
 - `networkInterfaces[].metadata.creationTimestamp` — время создания (RFC 3339)
 - `networkInterfaces[].metadata.resourceVersion` — версия ресурса
+- `networkInterfaces[].spec.instanceRef` — ссылка на Instance
 - `networkInterfaces[].spec.comment` — комментарий
 - `networkInterfaces[].spec.description` — описание
 - `networkInterfaces[].spec.displayName` — отображаемое имя
@@ -1740,6 +1792,7 @@ curl 'api:9006/v1/network-interfaces/upsert' \
 | `networkInterfaces[].metadata.annotations` | Object |
 | `networkInterfaces[].metadata.creationTimestamp` | string |
 | `networkInterfaces[].metadata.resourceVersion` | string |
+| `networkInterfaces[].spec.instanceRef` | Object |
 | `networkInterfaces[].spec.comment` | string |
 | `networkInterfaces[].spec.description` | string |
 | `networkInterfaces[].spec.displayName` | string |
@@ -1767,6 +1820,7 @@ curl 'api:9006/v1/network-interfaces/upsert' \
         "resourceVersion": "1"
       },
       "spec": {
+        "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" },
         "description": "Primary ENI for web-server-1",
         "displayName": "Web ENI 1"
       },
@@ -1823,6 +1877,7 @@ curl 'api:9006/v1/network-interfaces/list' \
         "resourceVersion": "3"
       },
       "spec": {
+        "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" },
         "description": "Primary ENI for web-server-1",
         "displayName": "Web ENI 1"
       },
@@ -1862,7 +1917,7 @@ curl 'api:9006/v1/network-interfaces/watch' \
   "networkInterfaces": [
     {
       "metadata": { "name": "web-eni-1", "namespace": "tenant-a", "uid": "e5f6a7b8-...", "resourceVersion": "81" },
-      "spec": { "description": "Primary ENI for web-server-1", "displayName": "Web ENI 1" },
+      "spec": { "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" }, "description": "Primary ENI for web-server-1", "displayName": "Web ENI 1" },
       "status": {
         "state": "available",
         "privateIpAddress": "10.0.1.12",
@@ -2846,7 +2901,230 @@ Subnet ↔ RouteTableBinding ↔ RouteTable(0.0.0.0/0 → NAT Gateway)
 
 ---
 
-### 12.13 Карта всех endpoint'ов
+### 12.13 Instance
+
+Виртуальная машина с привязкой к гипервизору. Agent watch'ит Instance'ы со своим `hvRef` и обслуживает их NI.
+
+**Endpoint:** `/v1/instances/{upsert|update|list|delete|watch}`
+
+#### Входные параметры
+
+- `instances[]` — массив ресурсов Instance
+- `instances[].metadata.name` — уникальное имя Instance в namespace
+- `instances[].metadata.namespace` — namespace (изоляция tenant'а)
+- `instances[].metadata.uid` — UUID; сервер генерирует при upsert; обязателен при update
+- `instances[].metadata.labels` — метки для labelSelector
+- `instances[].metadata.annotations` — произвольные аннотации
+- `instances[].spec.hvRef` — имя гипервизора; определяет placement (на MVP указывается вручную, в будущем — Scheduler)
+- `instances[].spec.comment` — комментарий
+- `instances[].spec.description` — описание
+- `instances[].spec.displayName` — отображаемое имя
+
+| название | обязательность | тип данных | значение по умолчанию |
+|----------|---------------|------------|----------------------|
+| `instances[]` | да | Object[] | |
+| `instances[].metadata.name` | да | string | |
+| `instances[].metadata.namespace` | да | string | |
+| `instances[].metadata.uid` | при update | string | |
+| `instances[].metadata.labels` | нет | Object | |
+| `instances[].metadata.annotations` | нет | Object | |
+| `instances[].spec.hvRef` | да | string | |
+| `instances[].spec.comment` | нет | string | |
+| `instances[].spec.description` | нет | string | |
+| `instances[].spec.displayName` | нет | string | |
+
+#### Ограничения
+
+| Поле | Правило | Ошибка |
+|------|---------|--------|
+| `metadata.name` | обязательное; DNS-label, 1–63 символа, `^[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]$` | `400 invalid_name` |
+| `metadata.namespace` | обязательное; тот же формат что `name` | `400 invalid_namespace` |
+| `metadata.uid` | запрещён при upsert; обязателен при update; UUID v4 | `400 invalid_uid` |
+| `metadata.labels` | ключ: `^[a-z0-9\-_.\/]{1,63}$`; значение: `^.{0,63}$` | `400 invalid_labels` |
+| `metadata.annotations` | ключ: `^[a-z0-9\-_.\/]{1,253}$`; значение: без ограничений | `400 invalid_annotations` |
+| `name` + `namespace` | уникальная пара (при upsert) | `409 already_exists` |
+| `spec.hvRef` | обязательное; имя гипервизора | `400 invalid_hv_ref` |
+| `spec.hvRef` | **мутабельное** — меняется при live migration | — |
+| `spec.description` | макс. 256 символов | `400 invalid_description` |
+| `spec.displayName` | макс. 128 символов | `400 invalid_display_name` |
+| `spec.comment` | макс. 256 символов | `400 invalid_comment` |
+
+> `spec.hvRef` — единственное обязательное spec-поле. В отличие от большинства ref-полей, оно **мутабельное**: при live migration Scheduler или оператор меняет `hvRef` на новый HV, а Agent на целевом HV получает watch-событие и создаёт NI.
+
+#### Пример использования (Создание)
+
+```bash
+curl 'api:9006/v1/instances/upsert' \
+--header 'Content-Type: application/json' \
+--data '{
+  "instances": [
+    {
+      "metadata": {
+        "name": "web-server-1",
+        "namespace": "tenant-a",
+        "labels": { "role": "web", "tier": "frontend" }
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "description": "Production web server",
+        "displayName": "Web Server 1"
+      }
+    }
+  ]
+}'
+```
+
+#### Выходные параметры
+
+- `instances[]` — массив Instance
+- `instances[].metadata` — стандартные метаданные
+- `instances[].metadata.name` — имя Instance
+- `instances[].metadata.namespace` — namespace
+- `instances[].metadata.uid` — UUID
+- `instances[].metadata.labels` — метки
+- `instances[].metadata.annotations` — аннотации
+- `instances[].metadata.creationTimestamp` — время создания (RFC 3339)
+- `instances[].metadata.resourceVersion` — версия ресурса
+- `instances[].spec.hvRef` — имя гипервизора
+- `instances[].spec.comment` — комментарий
+- `instances[].spec.description` — описание
+- `instances[].spec.displayName` — отображаемое имя
+- `instances[].status.state` — состояние: `pending`, `running`, `stopped`, `terminated`
+
+| название | тип данных |
+|----------|-----------|
+| `instances[]` | Object[] |
+| `instances[].metadata` | Object |
+| `instances[].metadata.name` | string |
+| `instances[].metadata.namespace` | string |
+| `instances[].metadata.uid` | string |
+| `instances[].metadata.labels` | Object |
+| `instances[].metadata.annotations` | Object |
+| `instances[].metadata.creationTimestamp` | string |
+| `instances[].metadata.resourceVersion` | string |
+| `instances[].spec.hvRef` | string |
+| `instances[].spec.comment` | string |
+| `instances[].spec.description` | string |
+| `instances[].spec.displayName` | string |
+| `instances[].status.state` | enum |
+
+#### Пример ответа
+
+```json
+{
+  "instances": [
+    {
+      "metadata": {
+        "name": "web-server-1",
+        "namespace": "tenant-a",
+        "uid": "a1b2c3d4-...",
+        "labels": { "role": "web", "tier": "frontend" },
+        "creationTimestamp": "2026-03-01T12:03:30Z",
+        "resourceVersion": "1"
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "description": "Production web server",
+        "displayName": "Web Server 1"
+      },
+      "status": {
+        "state": "pending"
+      }
+    }
+  ]
+}
+```
+
+#### List (по hvRef)
+
+```bash
+curl 'api:9006/v1/instances/list' \
+--header 'Content-Type: application/json' \
+--data '{
+  "selectors": [
+    {
+      "fieldSelector": {
+        "namespace": "tenant-a",
+        "hvRef": "hv1"
+      }
+    }
+  ]
+}'
+```
+
+**Ответ:**
+
+```json
+{
+  "resourceVersion": "75",
+  "instances": [
+    {
+      "metadata": {
+        "name": "web-server-1",
+        "namespace": "tenant-a",
+        "uid": "a1b2c3d4-...",
+        "labels": { "role": "web", "tier": "frontend" },
+        "creationTimestamp": "2026-03-01T12:03:30Z",
+        "resourceVersion": "2"
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "description": "Production web server",
+        "displayName": "Web Server 1"
+      },
+      "status": {
+        "state": "running"
+      }
+    }
+  ]
+}
+```
+
+#### Watch
+
+```bash
+curl 'api:9006/v1/instances/watch' \
+--header 'Content-Type: application/json' \
+--data '{
+  "resourceVersion": "75",
+  "selectors": [
+    {
+      "fieldSelector": {
+        "hvRef": "hv1"
+      }
+    }
+  ]
+}'
+```
+
+**Формат события:**
+
+```json
+{
+  "type": "add",
+  "instances": [
+    {
+      "metadata": { "name": "db-server-1", "namespace": "tenant-a", "uid": "b2c3d4e5-...", "resourceVersion": "76" },
+      "spec": { "hvRef": "hv1", "displayName": "DB Server 1" },
+      "status": { "state": "pending" }
+    }
+  ]
+}
+```
+
+#### Переходы состояний
+
+```
+pending ──Agent applied──▶ running
+running ──shutdown──▶ stopped
+running ──hvRef changed──▶ pending (на новом HV)
+stopped ──start──▶ pending → running
+running ──terminate──▶ terminated
+```
+
+---
+
+### 12.14 Карта всех endpoint'ов
 
 | Ресурс | Base path | Операции | Partial updates |
 |--------|-----------|----------|-----------------|
@@ -2854,6 +3132,7 @@ Subnet ↔ RouteTableBinding ↔ RouteTable(0.0.0.0/0 → NAT Gateway)
 | **Subnet** | `/v1/subnets/` | upsert, update, list, delete, watch | — |
 | **Address** | `/v1/addresses/` | upsert, update, list, delete, watch | — |
 | **NetworkInterface** | `/v1/network-interfaces/` | upsert, update, list, delete, watch | — |
+| **Instance** | `/v1/instances/` | upsert, update, list, delete, watch | — |
 | **Gateway** | `/v1/gateways/` | upsert, update, list, delete, watch | — |
 | **RouteTable** | `/v1/route-tables/` | upsert, update, list, delete, watch | — |
 | **SubnetBinding** | `/v1/subnet-bindings/` | upsert, update, list, delete, watch | — |
@@ -2875,7 +3154,7 @@ Subnet ↔ RouteTableBinding ↔ RouteTable(0.0.0.0/0 → NAT Gateway)
 
 | Тип | Ресурсы |
 |-----|---------|
-| Прямые | VPC, Subnet, Address, NetworkInterface, Gateway, RouteTable |
+| Прямые | VPC, Subnet, Address, NetworkInterface, Instance, Gateway, RouteTable |
 | Binding | SubnetBinding, AddressBinding, RouteTableBinding |
 
 **Технологический стек MVP:**
