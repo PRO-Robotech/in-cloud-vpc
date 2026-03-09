@@ -712,8 +712,13 @@ API построен в стилистике Kubernetes-like ресурсов (�
     "name": "my-resource",
     "namespace": "tenant-a",
     "uid": "550e8400-e29b-41d4-a716-446655440000",
-    "labels": { "env": "prod", "team": "infra" },
-    "annotations": { "description": "..." },
+    "labels": {
+      "env": "prod",
+      "team": "infra"
+    },
+    "annotations": {
+      "description": "..."
+    },
     "creationTimestamp": "2026-03-01T12:00:00Z",
     "resourceVersion": "42"
   },
@@ -822,7 +827,9 @@ curl 'api:9006/v1/vpcs/upsert' \
       "metadata": {
         "name": "prod-vpc",
         "namespace": "tenant-a",
-        "labels": { "env": "prod" }
+        "labels": {
+          "env": "prod"
+        }
       },
       "spec": {
         "description": "Production VPC",
@@ -875,7 +882,9 @@ curl 'api:9006/v1/vpcs/upsert' \
         "name": "prod-vpc",
         "namespace": "tenant-a",
         "uid": "a1b2c3d4-...",
-        "labels": { "env": "prod" },
+        "labels": {
+          "env": "prod"
+        },
         "creationTimestamp": "2026-03-01T12:00:00Z",
         "resourceVersion": "1"
       },
@@ -922,7 +931,9 @@ curl 'api:9006/v1/vpcs/list' \
         "name": "prod-vpc",
         "namespace": "tenant-a",
         "uid": "a1b2c3d4-...",
-        "labels": { "env": "prod" },
+        "labels": {
+          "env": "prod"
+        },
         "creationTimestamp": "2026-03-01T12:00:00Z",
         "resourceVersion": "1"
       },
@@ -947,7 +958,9 @@ curl 'api:9006/v1/vpcs/watch' \
   "resourceVersion": "55",
   "selectors": [
     {
-      "labelSelector": { "env": "prod" }
+      "labelSelector": {
+        "env": "prod"
+      }
     }
   ]
 }'
@@ -960,9 +973,19 @@ curl 'api:9006/v1/vpcs/watch' \
   "type": "modify",
   "vpcs": [
     {
-      "metadata": { "name": "prod-vpc", "namespace": "tenant-a", "uid": "a1b2c3d4-...", "resourceVersion": "56" },
-      "spec": { "description": "Production VPC", "displayName": "Prod VPC" },
-      "status": { "vni": 100001 }
+      "metadata": {
+        "name": "prod-vpc",
+        "namespace": "tenant-a",
+        "uid": "a1b2c3d4-...",
+        "resourceVersion": "56"
+      },
+      "spec": {
+        "description": "Production VPC",
+        "displayName": "Prod VPC"
+      },
+      "status": {
+        "vni": 100001
+      }
     }
   ]
 }
@@ -1029,7 +1052,9 @@ curl 'api:9006/v1/subnets/upsert' \
       "metadata": {
         "name": "web-subnet",
         "namespace": "tenant-a",
-        "labels": { "tier": "web" }
+        "labels": {
+          "tier": "web"
+        }
       },
       "spec": {
         "cidrBlock": "10.0.1.0/24",
@@ -1084,7 +1109,9 @@ curl 'api:9006/v1/subnets/upsert' \
         "name": "web-subnet",
         "namespace": "tenant-a",
         "uid": "b2c3d4e5-...",
-        "labels": { "tier": "web" },
+        "labels": {
+          "tier": "web"
+        },
         "creationTimestamp": "2026-03-01T12:01:00Z",
         "resourceVersion": "1"
       },
@@ -1130,7 +1157,9 @@ curl 'api:9006/v1/subnets/list' \
         "name": "web-subnet",
         "namespace": "tenant-a",
         "uid": "b2c3d4e5-...",
-        "labels": { "tier": "web" },
+        "labels": {
+          "tier": "web"
+        },
         "creationTimestamp": "2026-03-01T12:01:00Z",
         "resourceVersion": "1"
       },
@@ -1155,7 +1184,9 @@ curl 'api:9006/v1/subnets/watch' \
   "resourceVersion": "60",
   "selectors": [
     {
-      "labelSelector": { "tier": "web" }
+      "labelSelector": {
+        "tier": "web"
+      }
     }
   ]
 }'
@@ -1168,9 +1199,19 @@ curl 'api:9006/v1/subnets/watch' \
   "type": "modify",
   "subnets": [
     {
-      "metadata": { "name": "web-subnet", "namespace": "tenant-a", "uid": "b2c3d4e5-...", "resourceVersion": "61" },
-      "spec": { "cidrBlock": "10.0.1.0/24", "displayName": "Web tier subnet" },
-      "status": { "availableIpCount": 250 }
+      "metadata": {
+        "name": "web-subnet",
+        "namespace": "tenant-a",
+        "uid": "b2c3d4e5-...",
+        "resourceVersion": "61"
+      },
+      "spec": {
+        "cidrBlock": "10.0.1.0/24",
+        "displayName": "Web tier subnet"
+      },
+      "status": {
+        "availableIpCount": 250
+      }
     }
   ]
 }
@@ -1249,8 +1290,14 @@ curl 'api:9006/v1/subnet-bindings/upsert' \
         "namespace": "tenant-a"
       },
       "spec": {
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
-        "vpcRef": { "name": "prod-vpc", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
+        "vpcRef": {
+          "name": "prod-vpc",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -1305,8 +1352,14 @@ curl 'api:9006/v1/subnet-bindings/upsert' \
         "resourceVersion": "1"
       },
       "spec": {
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
-        "vpcRef": { "name": "prod-vpc", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
+        "vpcRef": {
+          "name": "prod-vpc",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -1324,7 +1377,10 @@ curl 'api:9006/v1/subnet-bindings/list' \
       "fieldSelector": {
         "namespace": "tenant-a",
         "refs": [
-          { "name": "prod-vpc", "resType": "VPC" }
+          {
+            "name": "prod-vpc",
+            "resType": "VPC"
+          }
         ]
       }
     }
@@ -1347,8 +1403,14 @@ curl 'api:9006/v1/subnet-bindings/list' \
         "resourceVersion": "1"
       },
       "spec": {
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
-        "vpcRef": { "name": "prod-vpc", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
+        "vpcRef": {
+          "name": "prod-vpc",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -1368,7 +1430,10 @@ curl 'api:9006/v1/subnet-bindings/watch' \
     {
       "fieldSelector": {
         "refs": [
-          { "name": "prod-vpc", "resType": "VPC" }
+          {
+            "name": "prod-vpc",
+            "resType": "VPC"
+          }
         ]
       }
     }
@@ -1383,10 +1448,21 @@ curl 'api:9006/v1/subnet-bindings/watch' \
   "type": "add",
   "subnetBindings": [
     {
-      "metadata": { "name": "db-subnet-to-prod-vpc", "namespace": "tenant-a", "uid": "e5f6a7b8-...", "resourceVersion": "66" },
+      "metadata": {
+        "name": "db-subnet-to-prod-vpc",
+        "namespace": "tenant-a",
+        "uid": "e5f6a7b8-...",
+        "resourceVersion": "66"
+      },
       "spec": {
-        "subnetRef": { "name": "db-subnet", "namespace": "tenant-a" },
-        "vpcRef": { "name": "prod-vpc", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "db-subnet",
+          "namespace": "tenant-a"
+        },
+        "vpcRef": {
+          "name": "prod-vpc",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -1470,7 +1546,10 @@ curl 'api:9006/v1/addresses/upsert' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
         "description": "Private IP for web server"
       }
     }
@@ -1489,7 +1568,9 @@ curl 'api:9006/v1/addresses/upsert' \
       "metadata": {
         "name": "web-eip-1",
         "namespace": "tenant-a",
-        "labels": { "role": "web" }
+        "labels": {
+          "role": "web"
+        }
       },
       "spec": {
         "type": "public",
@@ -1553,7 +1634,10 @@ curl 'api:9006/v1/addresses/upsert' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
         "description": "Private IP for web server"
       },
       "status": {
@@ -1575,7 +1659,9 @@ curl 'api:9006/v1/addresses/upsert' \
         "name": "web-eip-1",
         "namespace": "tenant-a",
         "uid": "f1a2b3c4-...",
-        "labels": { "role": "web" },
+        "labels": {
+          "role": "web"
+        },
         "creationTimestamp": "2026-03-01T12:03:00Z",
         "resourceVersion": "1"
       },
@@ -1603,7 +1689,10 @@ curl 'api:9006/v1/addresses/list' \
       "fieldSelector": {
         "namespace": "tenant-a",
         "refs": [
-          { "name": "web-subnet", "resType": "Subnet" }
+          {
+            "name": "web-subnet",
+            "resType": "Subnet"
+          }
         ]
       }
     }
@@ -1627,7 +1716,10 @@ curl 'api:9006/v1/addresses/list' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
         "description": "Private IP for web server"
       },
       "status": {
@@ -1652,7 +1744,10 @@ curl 'api:9006/v1/addresses/watch' \
     {
       "fieldSelector": {
         "refs": [
-          { "name": "web-subnet", "resType": "Subnet" }
+          {
+            "name": "web-subnet",
+            "resType": "Subnet"
+          }
         ]
       }
     }
@@ -1667,12 +1762,23 @@ curl 'api:9006/v1/addresses/watch' \
   "type": "add",
   "addresses": [
     {
-      "metadata": { "name": "web-private-ip-2", "namespace": "tenant-a", "uid": "f3a4b5c6-...", "resourceVersion": "71" },
+      "metadata": {
+        "name": "web-private-ip-2",
+        "namespace": "tenant-a",
+        "uid": "f3a4b5c6-...",
+        "resourceVersion": "71"
+      },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        }
       },
-      "status": { "ip": "10.0.1.13", "state": "allocated" }
+      "status": {
+        "ip": "10.0.1.13",
+        "state": "allocated"
+      }
     }
   ]
 }
@@ -1747,10 +1853,15 @@ curl 'api:9006/v1/network-interfaces/upsert' \
       "metadata": {
         "name": "web-eni-1",
         "namespace": "tenant-a",
-        "labels": { "role": "web" }
+        "labels": {
+          "role": "web"
+        }
       },
       "spec": {
-        "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" },
+        "instanceRef": {
+          "name": "web-server-1",
+          "namespace": "tenant-a"
+        },
         "description": "Primary ENI for web-server-1",
         "displayName": "Web ENI 1"
       }
@@ -1815,12 +1926,17 @@ curl 'api:9006/v1/network-interfaces/upsert' \
         "name": "web-eni-1",
         "namespace": "tenant-a",
         "uid": "e5f6a7b8-...",
-        "labels": { "role": "web" },
+        "labels": {
+          "role": "web"
+        },
         "creationTimestamp": "2026-03-01T12:04:00Z",
         "resourceVersion": "1"
       },
       "spec": {
-        "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" },
+        "instanceRef": {
+          "name": "web-server-1",
+          "namespace": "tenant-a"
+        },
         "description": "Primary ENI for web-server-1",
         "displayName": "Web ENI 1"
       },
@@ -1848,7 +1964,10 @@ curl 'api:9006/v1/network-interfaces/list' \
       "fieldSelector": {
         "namespace": "tenant-a",
         "refs": [
-          { "name": "web-subnet", "resType": "Subnet" }
+          {
+            "name": "web-subnet",
+            "resType": "Subnet"
+          }
         ]
       },
       "labelSelector": {
@@ -1872,12 +1991,17 @@ curl 'api:9006/v1/network-interfaces/list' \
         "name": "web-eni-1",
         "namespace": "tenant-a",
         "uid": "e5f6a7b8-...",
-        "labels": { "role": "web" },
+        "labels": {
+          "role": "web"
+        },
         "creationTimestamp": "2026-03-01T12:04:00Z",
         "resourceVersion": "3"
       },
       "spec": {
-        "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" },
+        "instanceRef": {
+          "name": "web-server-1",
+          "namespace": "tenant-a"
+        },
         "description": "Primary ENI for web-server-1",
         "displayName": "Web ENI 1"
       },
@@ -1886,8 +2010,14 @@ curl 'api:9006/v1/network-interfaces/list' \
         "privateIpAddress": "10.0.1.12",
         "macAddress": "02:42:0a:00:01:0c",
         "publicIp": "203.0.113.42",
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
-        "vpcRef": { "name": "prod-vpc", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
+        "vpcRef": {
+          "name": "prod-vpc",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -1903,7 +2033,9 @@ curl 'api:9006/v1/network-interfaces/watch' \
   "resourceVersion": "80",
   "selectors": [
     {
-      "labelSelector": { "role": "web" }
+      "labelSelector": {
+        "role": "web"
+      }
     }
   ]
 }'
@@ -1916,15 +2048,33 @@ curl 'api:9006/v1/network-interfaces/watch' \
   "type": "modify",
   "networkInterfaces": [
     {
-      "metadata": { "name": "web-eni-1", "namespace": "tenant-a", "uid": "e5f6a7b8-...", "resourceVersion": "81" },
-      "spec": { "instanceRef": { "name": "web-server-1", "namespace": "tenant-a" }, "description": "Primary ENI for web-server-1", "displayName": "Web ENI 1" },
+      "metadata": {
+        "name": "web-eni-1",
+        "namespace": "tenant-a",
+        "uid": "e5f6a7b8-...",
+        "resourceVersion": "81"
+      },
+      "spec": {
+        "instanceRef": {
+          "name": "web-server-1",
+          "namespace": "tenant-a"
+        },
+        "description": "Primary ENI for web-server-1",
+        "displayName": "Web ENI 1"
+      },
       "status": {
         "state": "available",
         "privateIpAddress": "10.0.1.12",
         "macAddress": "02:42:0a:00:01:0c",
         "publicIp": "203.0.113.42",
-        "subnetRef": { "name": "web-subnet", "namespace": "tenant-a" },
-        "vpcRef": { "name": "prod-vpc", "namespace": "tenant-a" }
+        "subnetRef": {
+          "name": "web-subnet",
+          "namespace": "tenant-a"
+        },
+        "vpcRef": {
+          "name": "prod-vpc",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -2005,8 +2155,14 @@ curl 'api:9006/v1/address-bindings/upsert' \
         "namespace": "tenant-a"
       },
       "spec": {
-        "addressRef": { "name": "web-private-ip", "namespace": "tenant-a" },
-        "networkInterfaceRef": { "name": "web-eni-1", "namespace": "tenant-a" }
+        "addressRef": {
+          "name": "web-private-ip",
+          "namespace": "tenant-a"
+        },
+        "networkInterfaceRef": {
+          "name": "web-eni-1",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -2026,8 +2182,14 @@ curl 'api:9006/v1/address-bindings/upsert' \
         "namespace": "tenant-a"
       },
       "spec": {
-        "addressRef": { "name": "web-eip-1", "namespace": "tenant-a" },
-        "networkInterfaceRef": { "name": "web-eni-1", "namespace": "tenant-a" }
+        "addressRef": {
+          "name": "web-eip-1",
+          "namespace": "tenant-a"
+        },
+        "networkInterfaceRef": {
+          "name": "web-eni-1",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -2082,8 +2244,14 @@ curl 'api:9006/v1/address-bindings/upsert' \
         "resourceVersion": "1"
       },
       "spec": {
-        "addressRef": { "name": "web-private-ip", "namespace": "tenant-a" },
-        "networkInterfaceRef": { "name": "web-eni-1", "namespace": "tenant-a" }
+        "addressRef": {
+          "name": "web-private-ip",
+          "namespace": "tenant-a"
+        },
+        "networkInterfaceRef": {
+          "name": "web-eni-1",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -2101,7 +2269,10 @@ curl 'api:9006/v1/address-bindings/list' \
       "fieldSelector": {
         "namespace": "tenant-a",
         "refs": [
-          { "name": "web-eni-1", "resType": "NetworkInterface" }
+          {
+            "name": "web-eni-1",
+            "resType": "NetworkInterface"
+          }
         ]
       }
     }
@@ -2126,8 +2297,14 @@ curl 'api:9006/v1/address-bindings/list' \
         "resourceVersion": "1"
       },
       "spec": {
-        "addressRef": { "name": "web-private-ip", "namespace": "tenant-a" },
-        "networkInterfaceRef": { "name": "web-eni-1", "namespace": "tenant-a" }
+        "addressRef": {
+          "name": "web-private-ip",
+          "namespace": "tenant-a"
+        },
+        "networkInterfaceRef": {
+          "name": "web-eni-1",
+          "namespace": "tenant-a"
+        }
       }
     },
     {
@@ -2139,8 +2316,14 @@ curl 'api:9006/v1/address-bindings/list' \
         "resourceVersion": "1"
       },
       "spec": {
-        "addressRef": { "name": "web-eip-1", "namespace": "tenant-a" },
-        "networkInterfaceRef": { "name": "web-eni-1", "namespace": "tenant-a" }
+        "addressRef": {
+          "name": "web-eip-1",
+          "namespace": "tenant-a"
+        },
+        "networkInterfaceRef": {
+          "name": "web-eni-1",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -2158,7 +2341,10 @@ curl 'api:9006/v1/address-bindings/watch' \
     {
       "fieldSelector": {
         "refs": [
-          { "name": "web-eni-1", "resType": "NetworkInterface" }
+          {
+            "name": "web-eni-1",
+            "resType": "NetworkInterface"
+          }
         ]
       }
     }
@@ -2173,10 +2359,21 @@ curl 'api:9006/v1/address-bindings/watch' \
   "type": "deleted",
   "addressBindings": [
     {
-      "metadata": { "name": "web-eni-1-public", "namespace": "tenant-a", "uid": "b0c9d8e7-...", "resourceVersion": "86" },
+      "metadata": {
+        "name": "web-eni-1-public",
+        "namespace": "tenant-a",
+        "uid": "b0c9d8e7-...",
+        "resourceVersion": "86"
+      },
       "spec": {
-        "addressRef": { "name": "web-eip-1", "namespace": "tenant-a" },
-        "networkInterfaceRef": { "name": "web-eni-1", "namespace": "tenant-a" }
+        "addressRef": {
+          "name": "web-eip-1",
+          "namespace": "tenant-a"
+        },
+        "networkInterfaceRef": {
+          "name": "web-eni-1",
+          "namespace": "tenant-a"
+        }
       }
     }
   ]
@@ -2371,9 +2568,19 @@ curl 'api:9006/v1/gateways/watch' \
   "type": "modify",
   "gateways": [
     {
-      "metadata": { "name": "prod-nat", "namespace": "tenant-a", "uid": "c3d4e5f6-...", "resourceVersion": "91" },
-      "spec": { "description": "NAT Gateway for private subnets" },
-      "status": { "state": "available", "publicIp": "203.0.113.10" }
+      "metadata": {
+        "name": "prod-nat",
+        "namespace": "tenant-a",
+        "uid": "c3d4e5f6-...",
+        "resourceVersion": "91"
+      },
+      "spec": {
+        "description": "NAT Gateway for private subnets"
+      },
+      "status": {
+        "state": "available",
+        "publicIp": "203.0.113.10"
+      }
     }
   ]
 }
@@ -2460,7 +2667,12 @@ curl 'api:9006/v1/route-tables/upsert' \
         "routes": [
           {
             "destinationCidrBlock": "0.0.0.0/0",
-            "target": { "gatewayRef": { "name": "prod-nat", "namespace": "tenant-a" } }
+            "target": {
+              "gatewayRef": {
+                "name": "prod-nat",
+                "namespace": "tenant-a"
+              }
+            }
           }
         ],
         "description": "Route table for private subnets"
@@ -2523,7 +2735,12 @@ curl 'api:9006/v1/route-tables/upsert' \
         "routes": [
           {
             "destinationCidrBlock": "0.0.0.0/0",
-            "target": { "gatewayRef": { "name": "prod-nat", "namespace": "tenant-a" } }
+            "target": {
+              "gatewayRef": {
+                "name": "prod-nat",
+                "namespace": "tenant-a"
+              }
+            }
           }
         ],
         "description": "Route table for private subnets"
@@ -2544,7 +2761,10 @@ curl 'api:9006/v1/route-tables/list' \
       "fieldSelector": {
         "namespace": "tenant-a",
         "refs": [
-          { "name": "prod-nat", "resType": "Gateway" }
+          {
+            "name": "prod-nat",
+            "resType": "Gateway"
+          }
         ]
       }
     }
@@ -2572,7 +2792,12 @@ curl 'api:9006/v1/route-tables/list' \
         "routes": [
           {
             "destinationCidrBlock": "0.0.0.0/0",
-            "target": { "gatewayRef": { "name": "prod-nat", "namespace": "tenant-a" } }
+            "target": {
+              "gatewayRef": {
+                "name": "prod-nat",
+                "namespace": "tenant-a"
+              }
+            }
           }
         ],
         "description": "Route table for private subnets"
@@ -2593,7 +2818,10 @@ curl 'api:9006/v1/route-tables/watch' \
     {
       "fieldSelector": {
         "refs": [
-          { "name": "prod-nat", "resType": "Gateway" }
+          {
+            "name": "prod-nat",
+            "resType": "Gateway"
+          }
         ]
       }
     }
@@ -2608,11 +2836,32 @@ curl 'api:9006/v1/route-tables/watch' \
   "type": "modify",
   "routeTables": [
     {
-      "metadata": { "name": "private-rt", "namespace": "tenant-a", "uid": "d5e6f7a8-...", "resourceVersion": "96" },
+      "metadata": {
+        "name": "private-rt",
+        "namespace": "tenant-a",
+        "uid": "d5e6f7a8-...",
+        "resourceVersion": "96"
+      },
       "spec": {
         "routes": [
-          { "destinationCidrBlock": "0.0.0.0/0", "target": { "gatewayRef": { "name": "prod-nat", "namespace": "tenant-a" } } },
-          { "destinationCidrBlock": "10.1.0.0/16", "target": { "addressRef": { "name": "peering-ip", "namespace": "tenant-a" } } }
+          {
+            "destinationCidrBlock": "0.0.0.0/0",
+            "target": {
+              "gatewayRef": {
+                "name": "prod-nat",
+                "namespace": "tenant-a"
+              }
+            }
+          },
+          {
+            "destinationCidrBlock": "10.1.0.0/16",
+            "target": {
+              "addressRef": {
+                "name": "peering-ip",
+                "namespace": "tenant-a"
+              }
+            }
+          }
         ],
         "description": "Route table for private subnets"
       }
@@ -2703,8 +2952,17 @@ curl 'api:9006/v1/route-table-bindings/upsert' \
         "namespace": "tenant-a"
       },
       "spec": {
-        "routeTableRef": { "name": "private-rt", "namespace": "tenant-a" },
-        "target": { "type": "subnet", "ref": { "name": "web-subnet", "namespace": "tenant-a" } }
+        "routeTableRef": {
+          "name": "private-rt",
+          "namespace": "tenant-a"
+        },
+        "target": {
+          "type": "subnet",
+          "ref": {
+            "name": "web-subnet",
+            "namespace": "tenant-a"
+          }
+        }
       }
     }
   ]
@@ -2724,8 +2982,17 @@ curl 'api:9006/v1/route-table-bindings/upsert' \
         "namespace": "tenant-a"
       },
       "spec": {
-        "routeTableRef": { "name": "private-rt", "namespace": "tenant-a" },
-        "target": { "type": "vpc", "ref": { "name": "prod-vpc", "namespace": "tenant-a" } }
+        "routeTableRef": {
+          "name": "private-rt",
+          "namespace": "tenant-a"
+        },
+        "target": {
+          "type": "vpc",
+          "ref": {
+            "name": "prod-vpc",
+            "namespace": "tenant-a"
+          }
+        }
       }
     }
   ]
@@ -2784,8 +3051,17 @@ curl 'api:9006/v1/route-table-bindings/upsert' \
         "resourceVersion": "1"
       },
       "spec": {
-        "routeTableRef": { "name": "private-rt", "namespace": "tenant-a" },
-        "target": { "type": "subnet", "ref": { "name": "web-subnet", "namespace": "tenant-a" } }
+        "routeTableRef": {
+          "name": "private-rt",
+          "namespace": "tenant-a"
+        },
+        "target": {
+          "type": "subnet",
+          "ref": {
+            "name": "web-subnet",
+            "namespace": "tenant-a"
+          }
+        }
       }
     }
   ]
@@ -2803,7 +3079,10 @@ curl 'api:9006/v1/route-table-bindings/list' \
       "fieldSelector": {
         "namespace": "tenant-a",
         "refs": [
-          { "name": "private-rt", "resType": "RouteTable" }
+          {
+            "name": "private-rt",
+            "resType": "RouteTable"
+          }
         ]
       }
     }
@@ -2828,8 +3107,17 @@ curl 'api:9006/v1/route-table-bindings/list' \
         "resourceVersion": "1"
       },
       "spec": {
-        "routeTableRef": { "name": "private-rt", "namespace": "tenant-a" },
-        "target": { "type": "subnet", "ref": { "name": "web-subnet", "namespace": "tenant-a" } }
+        "routeTableRef": {
+          "name": "private-rt",
+          "namespace": "tenant-a"
+        },
+        "target": {
+          "type": "subnet",
+          "ref": {
+            "name": "web-subnet",
+            "namespace": "tenant-a"
+          }
+        }
       }
     },
     {
@@ -2841,8 +3129,17 @@ curl 'api:9006/v1/route-table-bindings/list' \
         "resourceVersion": "1"
       },
       "spec": {
-        "routeTableRef": { "name": "private-rt", "namespace": "tenant-a" },
-        "target": { "type": "vpc", "ref": { "name": "prod-vpc", "namespace": "tenant-a" } }
+        "routeTableRef": {
+          "name": "private-rt",
+          "namespace": "tenant-a"
+        },
+        "target": {
+          "type": "vpc",
+          "ref": {
+            "name": "prod-vpc",
+            "namespace": "tenant-a"
+          }
+        }
       }
     }
   ]
@@ -2860,7 +3157,10 @@ curl 'api:9006/v1/route-table-bindings/watch' \
     {
       "fieldSelector": {
         "refs": [
-          { "name": "web-subnet", "resType": "Subnet" }
+          {
+            "name": "web-subnet",
+            "resType": "Subnet"
+          }
         ]
       }
     }
@@ -2875,10 +3175,24 @@ curl 'api:9006/v1/route-table-bindings/watch' \
   "type": "add",
   "routeTableBindings": [
     {
-      "metadata": { "name": "web-subnet-rt-binding", "namespace": "tenant-a", "uid": "f6a7b8c9-...", "resourceVersion": "101" },
+      "metadata": {
+        "name": "web-subnet-rt-binding",
+        "namespace": "tenant-a",
+        "uid": "f6a7b8c9-...",
+        "resourceVersion": "101"
+      },
       "spec": {
-        "routeTableRef": { "name": "private-rt", "namespace": "tenant-a" },
-        "target": { "type": "subnet", "ref": { "name": "web-subnet", "namespace": "tenant-a" } }
+        "routeTableRef": {
+          "name": "private-rt",
+          "namespace": "tenant-a"
+        },
+        "target": {
+          "type": "subnet",
+          "ref": {
+            "name": "web-subnet",
+            "namespace": "tenant-a"
+          }
+        }
       }
     }
   ]
@@ -2962,7 +3276,10 @@ curl 'api:9006/v1/instances/upsert' \
       "metadata": {
         "name": "web-server-1",
         "namespace": "tenant-a",
-        "labels": { "role": "web", "tier": "frontend" }
+        "labels": {
+          "role": "web",
+          "tier": "frontend"
+        }
       },
       "spec": {
         "hvRef": "hv1",
@@ -3018,7 +3335,10 @@ curl 'api:9006/v1/instances/upsert' \
         "name": "web-server-1",
         "namespace": "tenant-a",
         "uid": "a1b2c3d4-...",
-        "labels": { "role": "web", "tier": "frontend" },
+        "labels": {
+          "role": "web",
+          "tier": "frontend"
+        },
         "creationTimestamp": "2026-03-01T12:03:30Z",
         "resourceVersion": "1"
       },
@@ -3063,7 +3383,10 @@ curl 'api:9006/v1/instances/list' \
         "name": "web-server-1",
         "namespace": "tenant-a",
         "uid": "a1b2c3d4-...",
-        "labels": { "role": "web", "tier": "frontend" },
+        "labels": {
+          "role": "web",
+          "tier": "frontend"
+        },
         "creationTimestamp": "2026-03-01T12:03:30Z",
         "resourceVersion": "2"
       },
@@ -3104,9 +3427,19 @@ curl 'api:9006/v1/instances/watch' \
   "type": "add",
   "instances": [
     {
-      "metadata": { "name": "db-server-1", "namespace": "tenant-a", "uid": "b2c3d4e5-...", "resourceVersion": "76" },
-      "spec": { "hvRef": "hv1", "displayName": "DB Server 1" },
-      "status": { "state": "pending" }
+      "metadata": {
+        "name": "db-server-1",
+        "namespace": "tenant-a",
+        "uid": "b2c3d4e5-...",
+        "resourceVersion": "76"
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "DB Server 1"
+      },
+      "status": {
+        "state": "pending"
+      }
     }
   ]
 }

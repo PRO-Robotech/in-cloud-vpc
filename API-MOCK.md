@@ -169,12 +169,24 @@ curl -s 'http://api:9006/v1/vpcs/upsert' \
 -d '{
   "vpcs": [
     {
-      "metadata": { "name": "vpc-1", "namespace": "tenant-poc" },
-      "spec": { "description": "VPC for web tier", "displayName": "VPC 1" }
+      "metadata": {
+        "name": "vpc-1",
+        "namespace": "tenant-poc"
+      },
+      "spec": {
+        "description": "VPC for web tier",
+        "displayName": "VPC 1"
+      }
     },
     {
-      "metadata": { "name": "vpc-2", "namespace": "tenant-poc" },
-      "spec": { "description": "VPC for DB tier", "displayName": "VPC 2" }
+      "metadata": {
+        "name": "vpc-2",
+        "namespace": "tenant-poc"
+      },
+      "spec": {
+        "description": "VPC for DB tier",
+        "displayName": "VPC 2"
+      }
     }
   ]
 }'
@@ -193,8 +205,13 @@ curl -s 'http://api:9006/v1/vpcs/upsert' \
         "creationTimestamp": "2026-03-09T10:00:00Z",
         "resourceVersion": "1"
       },
-      "spec": { "description": "VPC for web tier", "displayName": "VPC 1" },
-      "status": { "vni": 100001 }
+      "spec": {
+        "description": "VPC for web tier",
+        "displayName": "VPC 1"
+      },
+      "status": {
+        "vni": 100001
+      }
     },
     {
       "metadata": {
@@ -204,8 +221,13 @@ curl -s 'http://api:9006/v1/vpcs/upsert' \
         "creationTimestamp": "2026-03-09T10:00:00Z",
         "resourceVersion": "1"
       },
-      "spec": { "description": "VPC for DB tier", "displayName": "VPC 2" },
-      "status": { "vni": 100002 }
+      "spec": {
+        "description": "VPC for DB tier",
+        "displayName": "VPC 2"
+      },
+      "status": {
+        "vni": 100002
+      }
     }
   ]
 }
@@ -225,12 +247,24 @@ curl -s 'http://api:9006/v1/subnets/upsert' \
 -d '{
   "subnets": [
     {
-      "metadata": { "name": "subnet-1", "namespace": "tenant-poc" },
-      "spec": { "cidrBlock": "10.0.0.0/24", "displayName": "Subnet VPC-1" }
+      "metadata": {
+        "name": "subnet-1",
+        "namespace": "tenant-poc"
+      },
+      "spec": {
+        "cidrBlock": "10.0.0.0/24",
+        "displayName": "Subnet VPC-1"
+      }
     },
     {
-      "metadata": { "name": "subnet-2", "namespace": "tenant-poc" },
-      "spec": { "cidrBlock": "10.0.0.0/24", "displayName": "Subnet VPC-2" }
+      "metadata": {
+        "name": "subnet-2",
+        "namespace": "tenant-poc"
+      },
+      "spec": {
+        "cidrBlock": "10.0.0.0/24",
+        "displayName": "Subnet VPC-2"
+      }
     }
   ]
 }'
@@ -249,8 +283,13 @@ curl -s 'http://api:9006/v1/subnets/upsert' \
         "creationTimestamp": "2026-03-09T10:00:01Z",
         "resourceVersion": "2"
       },
-      "spec": { "cidrBlock": "10.0.0.0/24", "displayName": "Subnet VPC-1" },
-      "status": { "availableIpCount": 251 }
+      "spec": {
+        "cidrBlock": "10.0.0.0/24",
+        "displayName": "Subnet VPC-1"
+      },
+      "status": {
+        "availableIpCount": 251
+      }
     },
     {
       "metadata": {
@@ -260,8 +299,13 @@ curl -s 'http://api:9006/v1/subnets/upsert' \
         "creationTimestamp": "2026-03-09T10:00:01Z",
         "resourceVersion": "2"
       },
-      "spec": { "cidrBlock": "10.0.0.0/24", "displayName": "Subnet VPC-2" },
-      "status": { "availableIpCount": 251 }
+      "spec": {
+        "cidrBlock": "10.0.0.0/24",
+        "displayName": "Subnet VPC-2"
+      },
+      "status": {
+        "availableIpCount": 251
+      }
     }
   ]
 }
@@ -281,17 +325,35 @@ curl -s 'http://api:9006/v1/subnet-bindings/upsert' \
 -d '{
   "subnetBindings": [
     {
-      "metadata": { "name": "subnet-1-to-vpc-1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "subnet-1-to-vpc-1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" },
-        "vpcRef": { "name": "vpc-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        },
+        "vpcRef": {
+          "name": "vpc-1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "subnet-2-to-vpc-2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "subnet-2-to-vpc-2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "subnetRef": { "name": "subnet-2", "namespace": "tenant-poc" },
-        "vpcRef": { "name": "vpc-2", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-2",
+          "namespace": "tenant-poc"
+        },
+        "vpcRef": {
+          "name": "vpc-2",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -312,8 +374,14 @@ curl -s 'http://api:9006/v1/subnet-bindings/upsert' \
         "resourceVersion": "3"
       },
       "spec": {
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" },
-        "vpcRef": { "name": "vpc-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        },
+        "vpcRef": {
+          "name": "vpc-1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
@@ -325,8 +393,14 @@ curl -s 'http://api:9006/v1/subnet-bindings/upsert' \
         "resourceVersion": "3"
       },
       "spec": {
-        "subnetRef": { "name": "subnet-2", "namespace": "tenant-poc" },
-        "vpcRef": { "name": "vpc-2", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-2",
+          "namespace": "tenant-poc"
+        },
+        "vpcRef": {
+          "name": "vpc-2",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -347,20 +421,56 @@ curl -s 'http://api:9006/v1/instances/upsert' \
 -d '{
   "instances": [
     {
-      "metadata": { "name": "instance-a1", "namespace": "tenant-poc", "labels": { "vpc": "vpc-1" } },
-      "spec": { "hvRef": "hv1", "displayName": "Web server 1" }
+      "metadata": {
+        "name": "instance-a1",
+        "namespace": "tenant-poc",
+        "labels": {
+          "vpc": "vpc-1"
+        }
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "Web server 1"
+      }
     },
     {
-      "metadata": { "name": "instance-b1", "namespace": "tenant-poc", "labels": { "vpc": "vpc-2" } },
-      "spec": { "hvRef": "hv1", "displayName": "DB server 1" }
+      "metadata": {
+        "name": "instance-b1",
+        "namespace": "tenant-poc",
+        "labels": {
+          "vpc": "vpc-2"
+        }
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "DB server 1"
+      }
     },
     {
-      "metadata": { "name": "instance-a2", "namespace": "tenant-poc", "labels": { "vpc": "vpc-1" } },
-      "spec": { "hvRef": "hv2", "displayName": "Web server 2" }
+      "metadata": {
+        "name": "instance-a2",
+        "namespace": "tenant-poc",
+        "labels": {
+          "vpc": "vpc-1"
+        }
+      },
+      "spec": {
+        "hvRef": "hv2",
+        "displayName": "Web server 2"
+      }
     },
     {
-      "metadata": { "name": "instance-b2", "namespace": "tenant-poc", "labels": { "vpc": "vpc-2" } },
-      "spec": { "hvRef": "hv2", "displayName": "DB server 2" }
+      "metadata": {
+        "name": "instance-b2",
+        "namespace": "tenant-poc",
+        "labels": {
+          "vpc": "vpc-2"
+        }
+      },
+      "spec": {
+        "hvRef": "hv2",
+        "displayName": "DB server 2"
+      }
     }
   ]
 }'
@@ -376,48 +486,76 @@ curl -s 'http://api:9006/v1/instances/upsert' \
         "name": "instance-a1",
         "namespace": "tenant-poc",
         "uid": "44444444-1111-1111-1111-aaa111111111",
-        "labels": { "vpc": "vpc-1" },
+        "labels": {
+          "vpc": "vpc-1"
+        },
         "creationTimestamp": "2026-03-09T10:00:03Z",
         "resourceVersion": "4"
       },
-      "spec": { "hvRef": "hv1", "displayName": "Web server 1" },
-      "status": { "state": "pending" }
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "Web server 1"
+      },
+      "status": {
+        "state": "pending"
+      }
     },
     {
       "metadata": {
         "name": "instance-b1",
         "namespace": "tenant-poc",
         "uid": "44444444-1111-1111-1111-bbb111111111",
-        "labels": { "vpc": "vpc-2" },
+        "labels": {
+          "vpc": "vpc-2"
+        },
         "creationTimestamp": "2026-03-09T10:00:03Z",
         "resourceVersion": "4"
       },
-      "spec": { "hvRef": "hv1", "displayName": "DB server 1" },
-      "status": { "state": "pending" }
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "DB server 1"
+      },
+      "status": {
+        "state": "pending"
+      }
     },
     {
       "metadata": {
         "name": "instance-a2",
         "namespace": "tenant-poc",
         "uid": "44444444-1111-1111-1111-aaa222222222",
-        "labels": { "vpc": "vpc-1" },
+        "labels": {
+          "vpc": "vpc-1"
+        },
         "creationTimestamp": "2026-03-09T10:00:03Z",
         "resourceVersion": "4"
       },
-      "spec": { "hvRef": "hv2", "displayName": "Web server 2" },
-      "status": { "state": "pending" }
+      "spec": {
+        "hvRef": "hv2",
+        "displayName": "Web server 2"
+      },
+      "status": {
+        "state": "pending"
+      }
     },
     {
       "metadata": {
         "name": "instance-b2",
         "namespace": "tenant-poc",
         "uid": "44444444-1111-1111-1111-bbb222222222",
-        "labels": { "vpc": "vpc-2" },
+        "labels": {
+          "vpc": "vpc-2"
+        },
         "creationTimestamp": "2026-03-09T10:00:03Z",
         "resourceVersion": "4"
       },
-      "spec": { "hvRef": "hv2", "displayName": "DB server 2" },
-      "status": { "state": "pending" }
+      "spec": {
+        "hvRef": "hv2",
+        "displayName": "DB server 2"
+      },
+      "status": {
+        "state": "pending"
+      }
     }
   ]
 }
@@ -437,30 +575,54 @@ curl -s 'http://api:9006/v1/network-interfaces/upsert' \
 -d '{
   "networkInterfaces": [
     {
-      "metadata": { "name": "eni-a1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "eni-a1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "instanceRef": { "name": "instance-a1", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-a1",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-a1"
       }
     },
     {
-      "metadata": { "name": "eni-b1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "eni-b1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "instanceRef": { "name": "instance-b1", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-b1",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-b1"
       }
     },
     {
-      "metadata": { "name": "eni-a2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "eni-a2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "instanceRef": { "name": "instance-a2", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-a2",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-a2"
       }
     },
     {
-      "metadata": { "name": "eni-b2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "eni-b2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "instanceRef": { "name": "instance-b2", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-b2",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-b2"
       }
     }
@@ -482,7 +644,10 @@ curl -s 'http://api:9006/v1/network-interfaces/upsert' \
         "resourceVersion": "5"
       },
       "spec": {
-        "instanceRef": { "name": "instance-a1", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-a1",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-a1"
       },
       "status": {
@@ -503,7 +668,10 @@ curl -s 'http://api:9006/v1/network-interfaces/upsert' \
         "resourceVersion": "5"
       },
       "spec": {
-        "instanceRef": { "name": "instance-b1", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-b1",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-b1"
       },
       "status": {
@@ -524,7 +692,10 @@ curl -s 'http://api:9006/v1/network-interfaces/upsert' \
         "resourceVersion": "5"
       },
       "spec": {
-        "instanceRef": { "name": "instance-a2", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-a2",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-a2"
       },
       "status": {
@@ -545,7 +716,10 @@ curl -s 'http://api:9006/v1/network-interfaces/upsert' \
         "resourceVersion": "5"
       },
       "spec": {
-        "instanceRef": { "name": "instance-b2", "namespace": "tenant-poc" },
+        "instanceRef": {
+          "name": "instance-b2",
+          "namespace": "tenant-poc"
+        },
         "displayName": "ENI for instance-b2"
       },
       "status": {
@@ -575,31 +749,55 @@ curl -s 'http://api:9006/v1/addresses/upsert' \
 -d '{
   "addresses": [
     {
-      "metadata": { "name": "addr-a1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "addr-a1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "addr-a2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "addr-a2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "addr-b1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "addr-b1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-2", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-2",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "addr-b2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "addr-b2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-2", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-2",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -621,9 +819,15 @@ curl -s 'http://api:9006/v1/addresses/upsert' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        }
       },
-      "status": { "ip": "10.0.0.1", "state": "allocated" }
+      "status": {
+        "ip": "10.0.0.1",
+        "state": "allocated"
+      }
     },
     {
       "metadata": {
@@ -635,9 +839,15 @@ curl -s 'http://api:9006/v1/addresses/upsert' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        }
       },
-      "status": { "ip": "10.0.0.2", "state": "allocated" }
+      "status": {
+        "ip": "10.0.0.2",
+        "state": "allocated"
+      }
     },
     {
       "metadata": {
@@ -649,9 +859,15 @@ curl -s 'http://api:9006/v1/addresses/upsert' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-2", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-2",
+          "namespace": "tenant-poc"
+        }
       },
-      "status": { "ip": "10.0.0.3", "state": "allocated" }
+      "status": {
+        "ip": "10.0.0.3",
+        "state": "allocated"
+      }
     },
     {
       "metadata": {
@@ -663,9 +879,15 @@ curl -s 'http://api:9006/v1/addresses/upsert' \
       },
       "spec": {
         "type": "private",
-        "subnetRef": { "name": "subnet-2", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-2",
+          "namespace": "tenant-poc"
+        }
       },
-      "status": { "ip": "10.0.0.4", "state": "allocated" }
+      "status": {
+        "ip": "10.0.0.4",
+        "state": "allocated"
+      }
     }
   ]
 }
@@ -690,31 +912,67 @@ curl -s 'http://api:9006/v1/address-bindings/upsert' \
 -d '{
   "addressBindings": [
     {
-      "metadata": { "name": "bind-eni-a1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "bind-eni-a1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "addressRef": { "name": "addr-a1", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-a1", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-a1",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-a1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "bind-eni-a2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "bind-eni-a2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "addressRef": { "name": "addr-a2", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-a2", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-a2",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-a2",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "bind-eni-b1", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "bind-eni-b1",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "addressRef": { "name": "addr-b1", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-b1", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-b1",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-b1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "bind-eni-b2", "namespace": "tenant-poc" },
+      "metadata": {
+        "name": "bind-eni-b2",
+        "namespace": "tenant-poc"
+      },
       "spec": {
-        "addressRef": { "name": "addr-b2", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-b2", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-b2",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-b2",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -735,8 +993,14 @@ curl -s 'http://api:9006/v1/address-bindings/upsert' \
         "resourceVersion": "7"
       },
       "spec": {
-        "addressRef": { "name": "addr-a1", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-a1", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-a1",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-a1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
@@ -748,8 +1012,14 @@ curl -s 'http://api:9006/v1/address-bindings/upsert' \
         "resourceVersion": "7"
       },
       "spec": {
-        "addressRef": { "name": "addr-a2", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-a2", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-a2",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-a2",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
@@ -761,8 +1031,14 @@ curl -s 'http://api:9006/v1/address-bindings/upsert' \
         "resourceVersion": "7"
       },
       "spec": {
-        "addressRef": { "name": "addr-b1", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-b1", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-b1",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-b1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
@@ -774,8 +1050,14 @@ curl -s 'http://api:9006/v1/address-bindings/upsert' \
         "resourceVersion": "7"
       },
       "spec": {
-        "addressRef": { "name": "addr-b2", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-b2", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-b2",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-b2",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -802,7 +1084,10 @@ Agent на HV1 получает watch-событие для `eni-a1` и `eni-b1`
     "resourceVersion": "8"
   },
   "spec": {
-    "instanceRef": { "name": "instance-a1", "namespace": "tenant-poc" },
+    "instanceRef": {
+      "name": "instance-a1",
+      "namespace": "tenant-poc"
+    },
     "displayName": "ENI for instance-a1"
   },
   "status": {
@@ -810,8 +1095,14 @@ Agent на HV1 получает watch-событие для `eni-a1` и `eni-b1`
     "privateIpAddress": "10.0.0.1",
     "macAddress": "02:42:0a:00:00:01",
     "publicIp": "",
-    "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" },
-    "vpcRef": { "name": "vpc-1", "namespace": "tenant-poc" }
+    "subnetRef": {
+      "name": "subnet-1",
+      "namespace": "tenant-poc"
+    },
+    "vpcRef": {
+      "name": "vpc-1",
+      "namespace": "tenant-poc"
+    }
   }
 }
 ```
@@ -843,7 +1134,11 @@ curl -s 'http://api:9006/v1/vpcs/list' \
 -H 'Content-Type: application/json' \
 -d '{
   "selectors": [
-    { "fieldSelector": { "namespace": "tenant-poc" } }
+    {
+      "fieldSelector": {
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -855,14 +1150,34 @@ curl -s 'http://api:9006/v1/vpcs/list' \
   "resourceVersion": "8",
   "vpcs": [
     {
-      "metadata": { "name": "vpc-1", "namespace": "tenant-poc", "uid": "11111111-1111-1111-1111-111111111111", "resourceVersion": "1" },
-      "spec": { "description": "VPC for web tier", "displayName": "VPC 1" },
-      "status": { "vni": 100001 }
+      "metadata": {
+        "name": "vpc-1",
+        "namespace": "tenant-poc",
+        "uid": "11111111-1111-1111-1111-111111111111",
+        "resourceVersion": "1"
+      },
+      "spec": {
+        "description": "VPC for web tier",
+        "displayName": "VPC 1"
+      },
+      "status": {
+        "vni": 100001
+      }
     },
     {
-      "metadata": { "name": "vpc-2", "namespace": "tenant-poc", "uid": "11111111-1111-1111-1111-222222222222", "resourceVersion": "1" },
-      "spec": { "description": "VPC for DB tier", "displayName": "VPC 2" },
-      "status": { "vni": 100002 }
+      "metadata": {
+        "name": "vpc-2",
+        "namespace": "tenant-poc",
+        "uid": "11111111-1111-1111-1111-222222222222",
+        "resourceVersion": "1"
+      },
+      "spec": {
+        "description": "VPC for DB tier",
+        "displayName": "VPC 2"
+      },
+      "status": {
+        "vni": 100002
+      }
     }
   ]
 }
@@ -879,7 +1194,10 @@ curl -s 'http://api:9006/v1/network-interfaces/list' \
       "fieldSelector": {
         "namespace": "tenant-poc",
         "refs": [
-          { "name": "vpc-1", "resType": "VPC" }
+          {
+            "name": "vpc-1",
+            "resType": "VPC"
+          }
         ]
       }
     }
@@ -894,27 +1212,61 @@ curl -s 'http://api:9006/v1/network-interfaces/list' \
   "resourceVersion": "8",
   "networkInterfaces": [
     {
-      "metadata": { "name": "eni-a1", "namespace": "tenant-poc", "uid": "55555555-1111-1111-1111-aaa111111111", "resourceVersion": "8" },
-      "spec": { "instanceRef": { "name": "instance-a1", "namespace": "tenant-poc" }, "displayName": "ENI for instance-a1" },
+      "metadata": {
+        "name": "eni-a1",
+        "namespace": "tenant-poc",
+        "uid": "55555555-1111-1111-1111-aaa111111111",
+        "resourceVersion": "8"
+      },
+      "spec": {
+        "instanceRef": {
+          "name": "instance-a1",
+          "namespace": "tenant-poc"
+        },
+        "displayName": "ENI for instance-a1"
+      },
       "status": {
         "state": "available",
         "privateIpAddress": "10.0.0.1",
         "macAddress": "02:42:0a:00:00:01",
         "publicIp": "",
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" },
-        "vpcRef": { "name": "vpc-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        },
+        "vpcRef": {
+          "name": "vpc-1",
+          "namespace": "tenant-poc"
+        }
       }
     },
     {
-      "metadata": { "name": "eni-a2", "namespace": "tenant-poc", "uid": "55555555-1111-1111-1111-aaa222222222", "resourceVersion": "8" },
-      "spec": { "instanceRef": { "name": "instance-a2", "namespace": "tenant-poc" }, "displayName": "ENI for instance-a2" },
+      "metadata": {
+        "name": "eni-a2",
+        "namespace": "tenant-poc",
+        "uid": "55555555-1111-1111-1111-aaa222222222",
+        "resourceVersion": "8"
+      },
+      "spec": {
+        "instanceRef": {
+          "name": "instance-a2",
+          "namespace": "tenant-poc"
+        },
+        "displayName": "ENI for instance-a2"
+      },
       "status": {
         "state": "available",
         "privateIpAddress": "10.0.0.2",
         "macAddress": "02:42:0a:00:00:02",
         "publicIp": "",
-        "subnetRef": { "name": "subnet-1", "namespace": "tenant-poc" },
-        "vpcRef": { "name": "vpc-1", "namespace": "tenant-poc" }
+        "subnetRef": {
+          "name": "subnet-1",
+          "namespace": "tenant-poc"
+        },
+        "vpcRef": {
+          "name": "vpc-1",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -945,14 +1297,40 @@ curl -s 'http://api:9006/v1/instances/list' \
   "resourceVersion": "8",
   "instances": [
     {
-      "metadata": { "name": "instance-a1", "namespace": "tenant-poc", "uid": "44444444-1111-1111-1111-aaa111111111", "labels": { "vpc": "vpc-1" }, "resourceVersion": "4" },
-      "spec": { "hvRef": "hv1", "displayName": "Web server 1" },
-      "status": { "state": "pending" }
+      "metadata": {
+        "name": "instance-a1",
+        "namespace": "tenant-poc",
+        "uid": "44444444-1111-1111-1111-aaa111111111",
+        "labels": {
+          "vpc": "vpc-1"
+        },
+        "resourceVersion": "4"
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "Web server 1"
+      },
+      "status": {
+        "state": "pending"
+      }
     },
     {
-      "metadata": { "name": "instance-b1", "namespace": "tenant-poc", "uid": "44444444-1111-1111-1111-bbb111111111", "labels": { "vpc": "vpc-2" }, "resourceVersion": "4" },
-      "spec": { "hvRef": "hv1", "displayName": "DB server 1" },
-      "status": { "state": "pending" }
+      "metadata": {
+        "name": "instance-b1",
+        "namespace": "tenant-poc",
+        "uid": "44444444-1111-1111-1111-bbb111111111",
+        "labels": {
+          "vpc": "vpc-2"
+        },
+        "resourceVersion": "4"
+      },
+      "spec": {
+        "hvRef": "hv1",
+        "displayName": "DB server 1"
+      },
+      "status": {
+        "state": "pending"
+      }
     }
   ]
 }
@@ -969,7 +1347,10 @@ curl -s 'http://api:9006/v1/address-bindings/list' \
       "fieldSelector": {
         "namespace": "tenant-poc",
         "refs": [
-          { "name": "eni-a1", "resType": "NetworkInterface" }
+          {
+            "name": "eni-a1",
+            "resType": "NetworkInterface"
+          }
         ]
       }
     }
@@ -984,10 +1365,21 @@ curl -s 'http://api:9006/v1/address-bindings/list' \
   "resourceVersion": "8",
   "addressBindings": [
     {
-      "metadata": { "name": "bind-eni-a1", "namespace": "tenant-poc", "uid": "77777777-1111-1111-1111-aaa111111111", "resourceVersion": "7" },
+      "metadata": {
+        "name": "bind-eni-a1",
+        "namespace": "tenant-poc",
+        "uid": "77777777-1111-1111-1111-aaa111111111",
+        "resourceVersion": "7"
+      },
       "spec": {
-        "addressRef": { "name": "addr-a1", "namespace": "tenant-poc" },
-        "networkInterfaceRef": { "name": "eni-a1", "namespace": "tenant-poc" }
+        "addressRef": {
+          "name": "addr-a1",
+          "namespace": "tenant-poc"
+        },
+        "networkInterfaceRef": {
+          "name": "eni-a1",
+          "namespace": "tenant-poc"
+        }
       }
     }
   ]
@@ -1007,10 +1399,30 @@ curl -s 'http://api:9006/v1/address-bindings/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "addressBindings": [
-    { "metadata": { "name": "bind-eni-a1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "bind-eni-a2", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "bind-eni-b1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "bind-eni-b2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "bind-eni-a1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "bind-eni-a2",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "bind-eni-b1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "bind-eni-b2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -1022,10 +1434,30 @@ curl -s 'http://api:9006/v1/addresses/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "addresses": [
-    { "metadata": { "name": "addr-a1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "addr-a2", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "addr-b1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "addr-b2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "addr-a1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "addr-a2",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "addr-b1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "addr-b2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -1037,10 +1469,30 @@ curl -s 'http://api:9006/v1/network-interfaces/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "networkInterfaces": [
-    { "metadata": { "name": "eni-a1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "eni-a2", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "eni-b1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "eni-b2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "eni-a1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "eni-a2",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "eni-b1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "eni-b2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -1052,10 +1504,30 @@ curl -s 'http://api:9006/v1/instances/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "instances": [
-    { "metadata": { "name": "instance-a1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "instance-a2", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "instance-b1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "instance-b2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "instance-a1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "instance-a2",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "instance-b1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "instance-b2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -1067,8 +1539,18 @@ curl -s 'http://api:9006/v1/subnet-bindings/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "subnetBindings": [
-    { "metadata": { "name": "subnet-1-to-vpc-1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "subnet-2-to-vpc-2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "subnet-1-to-vpc-1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "subnet-2-to-vpc-2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -1080,8 +1562,18 @@ curl -s 'http://api:9006/v1/subnets/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "subnets": [
-    { "metadata": { "name": "subnet-1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "subnet-2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "subnet-1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "subnet-2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
@@ -1093,8 +1585,18 @@ curl -s 'http://api:9006/v1/vpcs/delete' \
 -H 'Content-Type: application/json' \
 -d '{
   "vpcs": [
-    { "metadata": { "name": "vpc-1", "namespace": "tenant-poc" } },
-    { "metadata": { "name": "vpc-2", "namespace": "tenant-poc" } }
+    {
+      "metadata": {
+        "name": "vpc-1",
+        "namespace": "tenant-poc"
+      }
+    },
+    {
+      "metadata": {
+        "name": "vpc-2",
+        "namespace": "tenant-poc"
+      }
+    }
   ]
 }'
 ```
