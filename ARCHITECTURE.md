@@ -503,20 +503,20 @@ sequenceDiagram
     participant Agent as "Agent (HV)"
     participant Kernel as "Linux + FRR"
 
-    Note over Agent,API: Agent подписан на watch по Instance/NI/...
+    Note over Agent,API: Agent подписан на watch по Instance (hvRef = этот HV)
 
-    User->>API: upsert Instance (hvRef = "hv1")
-    User->>API: upsert NI (instanceRef → Instance)
+    User->>API: upsert NI (subnetRef → Subnet)
     User->>API: upsert Address + AddressBinding
     API->>IPAM: AllocateIP
     IPAM-->>API: IP assigned
     API-->>StatusCtrl: watch: AddressBinding
     StatusCtrl->>API: update NI status → available
 
-    API-->>Agent: watch: NI available
-    Agent->>Agent: resolve chain → compute desired state
+    User->>API: upsert Instance (hvRef, networkInterfacesRef → [NI])
+    API-->>Agent: watch: Instance created (hvRef = this HV)
+    Agent->>Agent: resolve networkInterfacesRef → NI → Subnet → VPC
     Agent->>Kernel: create VRF, bridge, VXLAN, veth
-    Agent->>API: update status
+    Agent->>API: update Instance status → running
 
     Note over Kernel: HV автономен.
     Note over Kernel: API может упасть —
@@ -533,11 +533,12 @@ sequenceDiagram
 Agent watch'ит API и строит desired state из цепочки ресурсов:
 
 ```
-Instance (spec.hvRef = "my-hv")
-  └── NI (spec.instanceRef → Instance)
-        └── AddressBinding → Address (status.ip)
-              └── Subnet → SubnetBinding → VPC (status.vni)
-                    └── RouteTableBinding → RouteTable → Gateway
+NI (spec.subnetRef → Subnet)
+  └── AddressBinding → Address (status.ip)
+        └── Subnet (spec.vpcRef) → VPC (status.vni)
+Instance (spec.hvRef = "my-hv", spec.networkInterfacesRef → [NI])
+  └── Agent разрешает NI → Subnet → VPC (VNI)
+        └── RouteTableBinding → RouteTable → Gateway
 ```
 
 Agent кеширует desired state локально. Это обеспечивает автономность:
@@ -672,23 +673,23 @@ sequenceDiagram
     participant Kernel as "Linux Kernel"
     participant FRR
 
-    Note over Agent,API: Agent уже watch'ит API
+    Note over Agent,API: Agent уже watch'ит API (Instance, hvRef = этот HV)
 
-    User->>API: upsert Instance (hvRef = "hv1")
-    API->>DB: INSERT Instance
-    User->>API: upsert NI (instanceRef → Instance)
+    User->>API: upsert NI (subnetRef → Subnet)
     API->>DB: INSERT NI
     User->>API: upsert Address (private)
     API->>IPAM: AllocateIP(subnet, target HV)
     IPAM->>IPAM: locality-aware: try host-block of target HV
     IPAM->>DB: INSERT ip_allocation
     IPAM-->>API: IP=10.0.0.5
-    User->>API: upsert AddressBinding
+    User->>API: upsert AddressBinding (private ↔ NI)
     API-->>StatusCtrl: watch: AddressBinding created
     StatusCtrl->>API: update NI status → available (+ MAC)
 
-    API-->>Agent: watch: NI available (Instance на этом HV)
-    Agent->>Agent: resolve chain: NI → Address → Subnet → VPC
+    User->>API: upsert Instance (hvRef, networkInterfacesRef → [NI])
+    API->>DB: INSERT Instance
+    API-->>Agent: watch: Instance created (hvRef = this HV)
+    Agent->>Agent: resolve networkInterfacesRef → NI → Subnet → VPC
     Agent->>Agent: compute desired state
 
     Agent->>Kernel: ip link add vrf-... type vrf
@@ -702,7 +703,7 @@ sequenceDiagram
     Note over Kernel,FRR: С этого момента HV автономен
     Note over Kernel,FRR: для этого NI
 
-    Agent->>API: update Instance status, NI applied
+    Agent->>API: update Instance status → running
 ```
 
 После конфигурации — HV работает полностью автономно. API можно выключить, и VM продолжат работать.
